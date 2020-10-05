@@ -3,6 +3,8 @@ resource "aws_api_gateway_rest_api" "api" {
   description = "Simple Screen Capturing utility"
 
   binary_media_types = ["*/*"]
+
+  tags = var.tags
 }
 
 resource "aws_api_gateway_resource" "api_proxy" {
@@ -68,6 +70,8 @@ resource "aws_api_gateway_domain_name" "api" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+
+  tags = var.tags
 }
 
 resource "aws_api_gateway_base_path_mapping" "path_mapping" {
@@ -85,11 +89,15 @@ resource "aws_api_gateway_usage_plan" "usageplan" {
     api_id = aws_api_gateway_rest_api.api.id
     stage  = aws_api_gateway_deployment.api.stage_name
   }
+
+  tags = var.tags
 }
 
 resource "aws_api_gateway_api_key" "key" {
   for_each = var.keys
   name     = each.key
+
+  tags = var.tags
 }
 
 resource "aws_api_gateway_usage_plan_key" "main" {

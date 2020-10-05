@@ -1,6 +1,13 @@
 data "aws_region" "current" {}
 
+data "aws_iam_role" "screencap_role" {
+  count = var.lambda_role == "" ? 0 : 1
+  name = var.lambda_role
+}
+
 resource "aws_iam_role" "screencap_role" {
+  count = var.lambda_role == "" ? 1 : 0
+
   name = var.name
 
   assume_role_policy = <<EOF
@@ -21,8 +28,10 @@ EOF
 }
 
 resource "aws_iam_role_policy" "log_perms" {
+  count = var.lambda_role == "" ? 1 : 0
+
   name = "log_perms"
-  role = aws_iam_role.screencap_role.id
+  role = aws_iam_role.screencap_role[0].id
 
   policy = <<EOF
 {
@@ -68,7 +77,7 @@ resource "aws_lambda_function" "lambda" {
   filename      = data.archive_file.package_zip.output_path
   function_name = var.name
   handler       = "index.handler"
-  role          = aws_iam_role.screencap_role.arn
+  role          = var.lambda_role == "" ? aws_iam_role.screencap_role[0].arn : data.aws_iam_role.screencap_role[0].arn
   runtime       = "nodejs12.x"
   timeout       = 60
   memory_size   = 3008

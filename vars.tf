@@ -14,6 +14,10 @@ variable "domain_name" {
   default = ""
 }
 
+variable "lambda_role" {
+  default = ""
+}
+
 variable "keys" {
   type = set(string)
   default = ["canvas"]
