@@ -52,12 +52,12 @@ EOF
 }
 
 locals {
-  source_path = "${path.module}/src"
+  source_path = "${path.module}/lambda-code"
 }
 
 resource "null_resource" "zip" {
   triggers = {
-    index_js     = filebase64sha256("${local.source_path}/index.js")
+    index_js     = filebase64sha256("${local.source_path}/src/index.js")
     package_json = filebase64sha256("${local.source_path}/package.json")
     package_lock = filebase64sha256("${local.source_path}/package-lock.json")
   }
@@ -67,22 +67,21 @@ resource "null_resource" "zip" {
   }
 }
 
-data "archive_file" "package_zip" {
-  type = "zip"
-  source_dir  = "${local.source_path}"
-  output_path = "${path.module}/${var.name}-${null_resource.zip.id}.zip"
+# The native archive module can't handle directory symlinks
+data "external" "package_zip" {
+  program = ["${path.module}/zip.sh", "${path.module}/${var.name}-${null_resource.zip.id}.zip", local.source_path]
 }
 
 resource "aws_lambda_function" "lambda" {
-  filename      = data.archive_file.package_zip.output_path
+  filename      = "${path.module}/${var.name}-${null_resource.zip.id}.zip"
   function_name = var.name
-  handler       = "index.handler"
+  handler       = "src/index.handler"
   role          = var.lambda_role == "" ? aws_iam_role.screencap_role[0].arn : data.aws_iam_role.screencap_role[0].arn
   runtime       = "nodejs12.x"
   timeout       = 60
   memory_size   = 3008
 
-  source_code_hash = filebase64sha256(data.archive_file.package_zip.output_path)
+  source_code_hash = data.external.package_zip.result.hash
 
   tags = var.tags
 }
