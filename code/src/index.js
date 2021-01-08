@@ -1,4 +1,11 @@
 const chromium = require("chrome-aws-lambda");
+const Sentry = require("@sentry/serverless");
+
+if (process.env.SENTRY_DSN) {
+  Sentry.AWSLambda.init({
+    dsn: process.env.SENTRY_DSN,
+  });
+}
 
 const puppeteerLaunch = (async function () {
   return await chromium.puppeteer.launch({
@@ -11,7 +18,7 @@ const puppeteerLaunch = (async function () {
   });
 })();
 
-exports.handler = async (event) => {
+exports.rawHandler = async (event) => {
   if (event.httpMethod !== "GET") {
     throw new Error(
       `takeScreenshot only accepts GET method, you tried: ${event.httpMethod}`
@@ -45,6 +52,8 @@ exports.handler = async (event) => {
   };
   return response;
 };
+
+exports.handler = Sentry.AWSLambda.wrapHandler(exports.rawHandler);
 
 // For tests only to ensure we clean up cleanly
 exports.shutdown = async () => {

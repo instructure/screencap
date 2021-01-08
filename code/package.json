@@ -5,7 +5,8 @@
   "private": true,
   "dependencies": {
     "chrome-aws-lambda": "^5.5.0",
-    "puppeteer-core": "^5.5.0"
+    "puppeteer-core": "^5.5.0",
+    "@sentry/serverless": "^5.29.2"
   },
   "devDependencies": {
     "eslint": "^7.15.0",

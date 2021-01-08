@@ -2,7 +2,7 @@ const index = require("../src/index");
 
 test("Rejects non-get requests", async () => {
   await expect(
-    index.handler({
+    index.rawHandler({
       httpMethod: "POST",
       queryStringParameters: {
         url: "http://localhost:2001/",
@@ -13,7 +13,7 @@ test("Rejects non-get requests", async () => {
 
 test("Rejects get requests without a URL", async () => {
   await expect(
-    index.handler({
+    index.rawHandler({
       httpMethod: "GET",
       queryStringParameters: {},
     })
@@ -22,7 +22,7 @@ test("Rejects get requests without a URL", async () => {
 
 test("Returns an error when loading a nonexistant page", async () => {
   await expect(
-    index.handler({
+    index.rawHandler({
       httpMethod: "GET",
       queryStringParameters: {
         url: "http://does-not-exist.example/test-page",
@@ -32,7 +32,7 @@ test("Returns an error when loading a nonexistant page", async () => {
 });
 
 test("Returns a PNG with the right dimensions when loading a real page", async () => {
-  const result = await index.handler({
+  const result = await index.rawHandler({
     httpMethod: "GET",
     queryStringParameters: {
       url: "http://localhost:2001/",

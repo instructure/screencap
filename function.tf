@@ -83,6 +83,10 @@ resource "aws_lambda_function" "lambda" {
 
   source_code_hash = data.external.package_zip.result.hash
 
+  environment {
+    variables = var.env
+  }
+
   tags = var.tags
 }
 

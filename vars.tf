@@ -7,6 +7,12 @@ variable "tags" {
   default = {}
 }
 
+# For passing in a sentry DSN
+variable "env" {
+  type = map(string)
+  default = {}
+}
+
 variable "certificate_arn" {
   default = ""
 }
