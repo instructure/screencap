@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+if(process.argv.length != 4) {
+  console.log('Screencap local run');
+  console.log('Usage: local_run url output_file');
+  process.exit(1);
+}
+
+const fs = require('fs')
+const index = require("../src/index");
+async function run() {
+  const result = await index.rawHandler({
+    httpMethod: "GET",
+    queryStringParameters: {
+      url: process.argv[2],
+    },
+  });
+  await index.shutdown();
+
+  const png = Buffer.from(result.body, "base64");
+
+  fs.writeFile(process.argv[3], png, err => {
+    if (err) {
+      console.error(err)
+      process.exit(1)
+    }
+    //file written successfully
+  })
+}
+
+run()
