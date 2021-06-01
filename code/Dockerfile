@@ -20,6 +20,6 @@ USER docker
 # Used to make chrome-aws-lambda run in prod mode
 ENV AWS_LAMBDA_FUNCTION_NAME=screencap-lambda
 
-COPY ./package.json ./package-lock.json ./
+COPY --chown=docker:docker ./package.json ./package-lock.json ./
 RUN npm install
-COPY . ./
+COPY --chown=docker:docker  . ./
