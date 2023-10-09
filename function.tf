@@ -77,11 +77,14 @@ resource "aws_lambda_function" "lambda" {
   function_name = var.name
   handler       = "src/index.handler"
   role          = var.lambda_role == "" ? aws_iam_role.screencap_role[0].arn : data.aws_iam_role.screencap_role[0].arn
-  runtime       = "nodejs12.x"
+  runtime       = "nodejs18.x"
   timeout       = 60
   memory_size   = 3008
 
   source_code_hash = data.external.package_zip.result.hash
+
+  # This has sparticuz/chromium 117; bump to appropriate latest version when upgrading
+  layers = ["arn:aws:lambda:${data.aws_region.current.name}:764866452798:layer:chrome-aws-lambda:38"]
 
   environment {
     variables = var.env

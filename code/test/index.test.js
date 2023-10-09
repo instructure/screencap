@@ -7,7 +7,7 @@ test("Rejects non-get requests", async () => {
       queryStringParameters: {
         url: "http://localhost:2001/",
       },
-    })
+    }),
   ).rejects.toThrow(/POST/);
 });
 
@@ -16,7 +16,7 @@ test("Rejects get requests without a URL", async () => {
     index.rawHandler({
       httpMethod: "GET",
       queryStringParameters: {},
-    })
+    }),
   ).rejects.toThrow(/URL/);
 });
 
@@ -27,7 +27,7 @@ test("Returns an error when loading a nonexistant page", async () => {
       queryStringParameters: {
         url: "http://does-not-exist.example/test-page",
       },
-    })
+    }),
   ).rejects.toThrow();
 });
 
