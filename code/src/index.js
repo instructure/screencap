@@ -10,7 +10,7 @@ if (process.env.SENTRY_DSN) {
 
 chromium.setHeadlessMode = true;
 
-const puppeteerLaunch = (async function () {
+const puppeteerLaunch = async function () {
   if (global.localChromium) {
     return await puppeteer.launch({
       defaultViewport: { width: 1280, height: 720, deviceScaleFactor: 2 },
@@ -19,15 +19,20 @@ const puppeteerLaunch = (async function () {
       headless: "new",
     });
   } else {
+    const customArgs = Array.from(chromium.args);
+    customArgs.push("--disable-gpu");
+    customArgs.push("--disk-cache-size=0");
+    customArgs.push("--media-cache-size=0");
     return await puppeteer.launch({
-      args: chromium.args,
+      args: customArgs,
       defaultViewport: { width: 1280, height: 720, deviceScaleFactor: 2 },
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
+      ignoreDefaultArgs: ["--disk-cache-size", "--in-process-gpu"],
       ignoreHTTPSErrors: true,
     });
   }
-})();
+};
 
 exports.rawHandler = async (event) => {
   if (event.httpMethod !== "GET") {
@@ -41,8 +46,7 @@ exports.rawHandler = async (event) => {
   }
   console.log("Screenshotting: " + url);
 
-  const browser = await puppeteerLaunch;
-  globalThis.browser = browser;
+  const browser = await puppeteerLaunch();
   const page = await browser.newPage();
 
   let body = "";
@@ -54,8 +58,17 @@ exports.rawHandler = async (event) => {
       encoding: "base64",
       fullPage: true,
     });
+    console.log("Screenshotting Done! " + url);
   } finally {
-    page.close();
+    const pages = await browser.pages();
+    for (let i = 0; i < pages.length; i++) {
+      try {
+        await pages[i].close();
+      } catch (e) {
+        console.log("Error closing page: " + e);
+      }
+    }
+    await browser.close();
   }
 
   const response = {
@@ -68,19 +81,3 @@ exports.rawHandler = async (event) => {
 };
 
 exports.handler = Sentry.AWSLambda.wrapHandler(exports.rawHandler);
-
-// For tests only to ensure we clean up cleanly
-exports.shutdown = async () => {
-  const browser = globalThis.browser;
-  if (browser) {
-    const pages = await browser.pages();
-    for (let i = 0; i < pages.length; i++) {
-      try {
-        await pages[i].close();
-      } catch (e) {
-        console.log("Error closing page: " + e);
-      }
-    }
-    await browser.close();
-  }
-};

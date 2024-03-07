@@ -16,7 +16,6 @@ async function run() {
       url: process.argv[2],
     },
   });
-  await index.shutdown();
 
   const png = Buffer.from(result.body, "base64");
 

@@ -84,7 +84,8 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = data.external.package_zip.result.hash
 
   # This has sparticuz/chromium 117; bump to appropriate latest version when upgrading
-  layers = ["arn:aws:lambda:${data.aws_region.current.name}:764866452798:layer:chrome-aws-lambda:38"]
+  # https://github.com/shelfio/chrome-aws-lambda-layer
+  layers = ["arn:aws:lambda:${data.aws_region.current.name}:764866452798:layer:chrome-aws-lambda:43"]
 
   environment {
     variables = var.env
