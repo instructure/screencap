@@ -2,7 +2,7 @@ data "aws_region" "current" {}
 
 data "aws_iam_role" "screencap_role" {
   count = var.lambda_role == "" ? 0 : 1
-  name = var.lambda_role
+  name  = var.lambda_role
 }
 
 resource "aws_iam_role" "screencap_role" {
@@ -103,4 +103,10 @@ resource "aws_lambda_permission" "gateway" {
   # The /*/* portion grants access from any method on any resource
   # within the API Gateway "REST API".
   source_arn = "${aws_api_gateway_rest_api.api.execution_arn}/*/*"
+}
+
+resource "aws_cloudwatch_log_group" "screencap" {
+  name              = "/aws/lambda/${var.name}"
+  retention_in_days = 30
+  tags              = var.tags
 }
